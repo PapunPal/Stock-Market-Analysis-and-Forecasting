@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Price Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --accent: #4ecdc4;
+            --background-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --text: #ffffff;
+            --card-bg: rgba(255,255,255,0.1);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background-gradient);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            background: var(--card-bg);
+            padding: 30px 40px;
+            margin-top: 60px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            width: 90%;
+            max-width: 500px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+        h2 {
+            text-align: center;
+            color:var(--secondary);
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: var(--text);
+            transition: border 0.2s;
+        }
+        input[type="file"]::file-selector-button {
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        input[type="file"]:focus, input[type="file"]:hover {
+            border: 2px solid var(--secondary);
+        }
+        button {
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+        }
+        #result {
+            margin-top: 25px;
+            padding: 18px;
+            background: rgba(76, 205, 196, 0.15);
+            border-left: 6px solid var(--accent);
+            border-radius: 12px;
+            display: none;
+            color: var(--text);
+        }
+        #result p {
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .label {
+            color: var(--accent);
+        }
+        .value {
+            color: var(--text);
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid var(--accent);
+            padding: 10px 12px;
+            text-align: center;
+            color: var(--text);
+        }
+        th {
+            background: var(--primary);
+            color: var(--text);
+            font-weight: 600;
+        }
+        td {
+            background: rgba(255,255,255,0.05);
+        }
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px 5px;
+                margin-top: 20px;
+                width: 98%;
+                max-width: 100%;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+            button, input[type="file"] {
+                font-size: 14px;
+                padding: 10px;
+            }
+            th, td {
+                padding: 6px 4px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📈 Upload CSV File to Predict Stock Price</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result" style="display:none;"></div>
+        <div id="tableContainer"></div>
+    </div>
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            formData.delete('stock_symbol');
+            const resultDiv = document.getElementById('result');
+            const tableContainer = document.getElementById('tableContainer');
+            resultDiv.style.display = "none";
+            tableContainer.innerHTML = ""; // Clear previous table
+
+            const response = await fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.innerHTML = `<p style="color:#ff5252;">${data.error}</p>`;
+                resultDiv.style.display = "block";
+                return;
+            }
+
+            resultDiv.innerHTML = `
+                <p><span class="label">📉 Predicted Close Price (Without News):</span> <span class="value">₹${data.predicted_price}</span></p>
+                <p><span class="label">📰 News Sentiment Score:</span> <span class="value">${data.sentiment_score}</span></p>
+                <p><span class="label">💹 Final Predicted Price (With News):</span> <span class="value">₹${data.final_predicted_price}</span></p>
+            `;
+            resultDiv.style.display = "block";
+
+            // Create table for predicted prices
+            let tableHTML = `<table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Predicted Price (With News)</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            data.adjusted_future_prices.forEach((price, idx) => {
+                tableHTML += `<tr>
+                    <td>Day ${idx + 1}</td>
+                    <td>₹${price}</td>
+                </tr>`;
+            });
+            tableHTML += `</tbody></table>`;
+            tableContainer.innerHTML = tableHTML;
+        };
+    </script>
+</body>
+</html>
