@@ -10,7 +10,7 @@ from flask_cors import CORS
 load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://stock-market-analysis-and-forecasti-ten.vercel.app",
-    "http://localhost:5500"]
+    "http://127.0.0.1:5500"]
 }})
 
 # ----- Helper Functions -----
