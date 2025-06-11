@@ -52,7 +52,7 @@ def adjust_prediction(predicted_value, sentiment_score):
 # ----- Routes -----
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return jsonify({"message": "Welcome to StockSense API. Use the /predict endpoint to get stock predictions."})
 
 @app.route('/predict', methods=['POST'])
 def predict():
