@@ -16,6 +16,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
+
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
 
     // Demo Chart
     const demoCtx = document.getElementById('stockChart').getContext('2d');
