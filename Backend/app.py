@@ -9,7 +9,9 @@ from flask_cors import CORS
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": ["https://stock-market-analysis-and-forecasti-ten.vercel.app",
+    "http://localhost:5500"]
+}})
 
 # ----- Helper Functions -----
 def normalize_data(values):
